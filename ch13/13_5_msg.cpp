@@ -23,7 +23,7 @@ void send_fd(int fd,int fd_to_send){
     cm.cmsg_len = CONTROL_LEN;
     cm.cmsg_level = SOL_SOCKET;
     cm.cmsg_type = SCM_RIGHTS;
-    *(int *) CMSG_DATA(&cm) = fd_to_send;
+    *(int *) CMSG_DATA(&cm) = fd_to_send;//解引用这个指针，将控制消息数据部分视为一个整数，并赋值给它。
     msg.msg_control = &cm;
     msg.msg_controllen = CONTROL_LEN;
 
@@ -59,7 +59,7 @@ int main(){
 
     pid_t pid = fork();
     assert(pid>=0);
-
+    //父进程和子进程在调用 fork 之后确实有独立的进程表和文件描述符表，它们各自维护自己打开的文件描述符表
     if(pid==0){
         close(pipefd[0]);
         fd_to_pass = open("test.txt",O_RDWR,0666);
@@ -67,7 +67,7 @@ int main(){
         close(fd_to_pass);
         exit(0);
     }
-    close(pipefd[1]);
+    close(pipefd[1]); 
     fd_to_pass = recv_fd(pipefd[0]);
     char buf[1024];
     memset(buf,'\0',sizeof(buf));
